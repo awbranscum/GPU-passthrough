@@ -1,0 +1,77 @@
+@echo off
+echo ======================================================
+echo   Ollama GPU Server - Environment Setup & Installer
+echo ======================================================
+echo.
+
+:: Step 1: Check for Python installation
+echo [1/7] Checking for Python...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ❌ Python not found! Please install Python 3.9+ and add it to PATH.
+    pause
+    exit /b 1
+)
+
+:: Step 2: Create virtual environment
+echo [2/7] Creating virtual environment 'venv'...
+if not exist venv (
+    python -m venv venv
+    if %errorlevel% neq 0 (
+        echo ❌ Failed to create virtual environment.
+        pause
+        exit /b 1
+    )
+) else (
+    echo ⚙️  Virtual environment already exists, skipping creation.
+)
+
+:: Step 3: Activate virtual environment
+echo [3/7] Activating virtual environment...
+call venv\Scripts\activate
+if %errorlevel% neq 0 (
+    echo ❌ Failed to activate virtual environment.
+    pause
+    exit /b 1
+)
+
+:: Step 4: Upgrade pip, setuptools, and wheel
+echo [4/7] Upgrading pip, setuptools, and wheel...
+python -m pip install --upgrade pip setuptools wheel
+if %errorlevel% neq 0 (
+    echo ❌ Failed to upgrade pip.
+    pause
+    exit /b 1
+)
+
+:: Step 5: Install main dependencies
+echo [5/7] Installing FastAPI, Uvicorn, Pydantic, and Transformers...
+pip install --upgrade fastapi uvicorn pydantic transformers
+
+:: Step 6: Install PyTorch (with GPU support if available)
+echo [6/7] Installing PyTorch (CUDA 12.1 if available)...
+pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+if %errorlevel% neq 0 (
+    echo ⚠️  CUDA 12.1 not supported on this system, installing CPU-only PyTorch...
+    pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+)
+
+:: Step 7: Verify installation
+echo [7/7] Verifying installed packages...
+python -c "import fastapi, torch, transformers, pydantic; print('✅ All dependencies installed successfully!')"
+if %errorlevel% neq 0 (
+    echo ❌ Verification failed. Some packages may not be installed correctly.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ======================================================
+echo ✅ Ollama GPU Server setup complete!
+echo.
+echo To activate the environment later, run:
+echo     call venv\Scripts\activate
+echo Then start your server with:
+echo     python ollama_gpu_server.py
+echo ======================================================
+pause
