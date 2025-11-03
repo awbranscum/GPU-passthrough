@@ -1,0 +1,1 @@
+export OLLAMA_HOST=http://<windows_host_ip>:11434
